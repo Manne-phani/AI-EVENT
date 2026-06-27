@@ -37,12 +37,12 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const login = async (mobileNumber) => {
+  const login = async (mobileNumber, gmail) => {
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobileNumber }),
+        body: JSON.stringify({ mobileNumber, gmail }),
       });
       return await handleResponse(res);
     } catch (err) {
@@ -104,11 +104,15 @@ export const AuthProvider = ({ children }) => {
     return await handleResponse(res);
   };
 
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@gmail.com';
+  const isAdmin = !!(user && user.gmail === adminEmail);
+
   return (
     <AuthContext.Provider value={{
       user,
       token,
       isAuthenticated: !!token,
+      isAdmin,
       loading,
       login,
       verifyOtp,

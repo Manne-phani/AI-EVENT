@@ -11,7 +11,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import { ShieldAlert, Sparkles, Wand2 } from 'lucide-react';
 
 const AppContent = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   
   // Pairing workflow states
@@ -29,20 +29,37 @@ const AppContent = () => {
       } else if (hash === '#history') {
         setCurrentPage('history');
       } else if (hash === '#admin') {
-        setCurrentPage('admin');
+        if (isAdmin) {
+          setCurrentPage('admin');
+        } else {
+          setCurrentPage('home');
+        }
       }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [isAdmin]);
 
   // Authentication Guard: Redirect to login if accessing guarded routes while unauthenticated
   useEffect(() => {
     const guardedPages = ['pairing', 'history', 'admin'];
-    if (!loading && guardedPages.includes(currentPage) && !isAuthenticated) {
-      setCurrentPage('login');
+    if (!loading && guardedPages.includes(currentPage)) {
+      if (!isAuthenticated) {
+        setCurrentPage('login');
+      } else if (currentPage === 'admin' && !isAdmin) {
+        setCurrentPage('home');
+      }
     }
-  }, [currentPage, isAuthenticated, loading]);
+  }, [currentPage, isAuthenticated, isAdmin, loading]);
+
+  // Admin Guard: If logged in as admin, restrict to admin dashboard and history only
+  useEffect(() => {
+    if (!loading && isAuthenticated && isAdmin) {
+      if (currentPage === 'home' || currentPage === 'pairing' || currentPage === 'login') {
+        setCurrentPage('admin');
+      }
+    }
+  }, [currentPage, isAuthenticated, isAdmin, loading]);
 
   if (loading) {
     return (
@@ -76,7 +93,7 @@ const AppContent = () => {
       case 'home':
         return <HomePage setCurrentPage={setCurrentPage} />;
       case 'login':
-        return <LoginPage onLoginSuccess={() => setCurrentPage('pairing')} />;
+        return <LoginPage onLoginSuccess={(targetPage) => setCurrentPage(targetPage || 'pairing')} />;
       case 'pairing':
         if (loadingPairing) {
           return (

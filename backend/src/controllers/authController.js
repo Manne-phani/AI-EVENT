@@ -4,10 +4,19 @@ const { dbRun, dbGet } = require('../config/db');
 
 // Request OTP
 const requestOtp = async (req, res) => {
-  const { mobileNumber } = req.body;
+  const { mobileNumber, gmail } = req.body;
 
   if (!mobileNumber || mobileNumber.trim() === '') {
     return res.status(400).json({ error: 'Mobile number is required.' });
+  }
+
+  if (!gmail || gmail.trim() === '') {
+    return res.status(400).json({ error: 'Gmail address is required.' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(gmail.trim())) {
+    return res.status(400).json({ error: 'Please provide a valid Gmail/email address.' });
   }
 
   try {
@@ -15,26 +24,25 @@ const requestOtp = async (req, res) => {
     const cleanMobile = mobileNumber.replace(/\s+/g, '');
     
     // Generate a 4-digit OTP
-    // Default to '1234' for easier testing, but let's generate a random one and support both
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 mins expiration
 
     const otpId = uuidv4();
     await dbRun(
-      'INSERT INTO otps (id, mobile_number, code, expires_at, used) VALUES (?, ?, ?, ?, 0)',
-      [otpId, cleanMobile, code, expiresAt]
+      'INSERT INTO otps (id, mobile_number, code, expires_at, used, gmail) VALUES (?, ?, ?, ?, 0, ?)',
+      [otpId, cleanMobile, code, expiresAt, gmail.trim().toLowerCase()]
     );
 
     // Print OTP in backend logs for the tester
     console.log(`\n========================================`);
     console.log(`[SMS MOCK] To: ${cleanMobile}`);
+    console.log(`[SMS MOCK] Gmail: ${gmail.trim().toLowerCase()}`);
     console.log(`[SMS MOCK] Verification Code: ${code}`);
     console.log(`[SMS MOCK] (Alternative: '1234' also works for testing)`);
     console.log(`========================================\n`);
 
     return res.status(200).json({
       message: 'OTP sent successfully (mocked). Check the server console or use 1234.',
-      // In development environment, send the code in the response to make life even easier for testing
       debugOtp: code
     });
   } catch (error) {
@@ -74,18 +82,33 @@ const verifyOtp = async (req, res) => {
       await dbRun('UPDATE otps SET used = 1 WHERE id = ?', [otpRecord.id]);
     }
 
+    // Retrieve gmail to link to user
+    let userGmail = '';
+    if (otpRecord) {
+      userGmail = otpRecord.gmail;
+    } else {
+      // If bypass code was used, fetch the latest gmail entered for this number
+      const latestOtp = await dbGet('SELECT gmail FROM otps WHERE mobile_number = ? ORDER BY expires_at DESC LIMIT 1', [cleanMobile]);
+      userGmail = latestOtp ? latestOtp.gmail : 'guest@gmail.com';
+    }
+
     // Find or create User
     let user = await dbGet('SELECT * FROM users WHERE mobile_number = ?', [cleanMobile]);
     if (!user) {
       const userId = uuidv4();
-      await dbRun('INSERT INTO users (id, mobile_number) VALUES (?, ?)', [userId, cleanMobile]);
-      user = { id: userId, mobile_number: cleanMobile };
-      console.log(`Created new user for mobile: ${cleanMobile}`);
+      await dbRun('INSERT INTO users (id, mobile_number, gmail) VALUES (?, ?, ?)', [userId, cleanMobile, userGmail]);
+      user = { id: userId, mobile_number: cleanMobile, gmail: userGmail };
+      console.log(`Created new user for mobile: ${cleanMobile} / ${userGmail}`);
+    } else {
+      // Update the user's gmail address
+      await dbRun('UPDATE users SET gmail = ? WHERE id = ?', [userGmail, user.id]);
+      user.gmail = userGmail;
+      console.log(`Updated user gmail for mobile: ${cleanMobile} / ${userGmail}`);
     }
 
-    // Generate JWT
+    // Generate JWT containing user details including gmail
     const token = jwt.sign(
-      { id: user.id, mobile_number: user.mobile_number },
+      { id: user.id, mobile_number: user.mobile_number, gmail: user.gmail },
       process.env.JWT_SECRET || 'cakes_and_crunches_secret_key_12345',
       { expiresIn: '30d' } // Stay logged in for 30 days
     );
@@ -95,7 +118,8 @@ const verifyOtp = async (req, res) => {
       token,
       user: {
         id: user.id,
-        mobileNumber: user.mobile_number
+        mobileNumber: user.mobile_number,
+        gmail: user.gmail
       }
     });
   } catch (error) {

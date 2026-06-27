@@ -54,17 +54,17 @@ const AdminDashboard = () => {
   }
 
   const {
-    totalGenerations,
-    averageRating,
-    likes,
-    dislikes,
+    totalGenerations = 0,
+    averageRating = 0,
+    likes = 0,
+    dislikes = 0,
     topEvents = [],
     topCakes = [],
-    totalUsers,
-    activeUsers,
+    totalUsers = 0,
+    activeUsers = 0,
     dailyChart = [],
     recentFeedbacks = []
-  } = stats;
+  } = stats || {};
 
   const totalReviews = likes + dislikes;
   const likePercentage = totalReviews > 0 ? Math.round((likes / totalReviews) * 100) : 100;

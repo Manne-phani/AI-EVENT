@@ -1,6 +1,12 @@
 const { dbAll, dbGet } = require('../config/db');
 
 const getAnalytics = async (req, res) => {
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@gmail.com';
+
+  if (!req.user || req.user.gmail !== adminEmail) {
+    return res.status(403).json({ error: 'Access denied. Only the authorized administrator can access this page.' });
+  }
+
   try {
     // 1. Total Generations
     const totalGenerations = await dbGet('SELECT COUNT(*) as count FROM generations');

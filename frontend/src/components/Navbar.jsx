@@ -3,14 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { Menu, X, Cookie, History, BarChart3, LogOut, LogIn, Sparkles } from 'lucide-react';
 
 const Navbar = ({ currentPage, setCurrentPage }) => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Cookie, authRequired: false },
     { id: 'pairing', label: 'Pairing Tool', icon: Sparkles, authRequired: true },
     { id: 'history', label: 'History', icon: History, authRequired: true },
-    { id: 'admin', label: 'Admin Dashboard', icon: BarChart3, authRequired: true },
+    { id: 'admin', label: 'Admin Dashboard', icon: BarChart3, authRequired: true, adminOnly: true },
   ];
 
   const handleNavClick = (id) => {
@@ -41,6 +41,8 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               if (item.authRequired && !isAuthenticated) return null;
+              if (item.adminOnly && !isAdmin) return null;
+              if (isAdmin && (item.id === 'home' || item.id === 'pairing')) return null;
               const Icon = item.icon;
               const isActive = currentPage === item.id;
               return (
@@ -63,10 +65,15 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
           {/* User Info / Auth Controls */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <div className="flex items-center space-x-4 bg-brand-beige/60 border border-brand-pink/40 px-4 py-2 rounded-2xl">
-                <span className="text-sm font-medium text-brand-chocolate-light">
-                  📱 {user?.mobileNumber}
-                </span>
+              <div className="flex items-center space-x-4 bg-brand-beige/60 border border-brand-pink/40 px-4 py-1.5 rounded-2xl">
+                <div className="flex flex-col text-left">
+                  <span className="text-xs font-bold text-brand-chocolate leading-tight">
+                    📱 {user?.mobileNumber}
+                  </span>
+                  <span className="text-[10px] font-semibold text-brand-chocolate-light leading-normal">
+                    ✉️ {user?.gmail}
+                  </span>
+                </div>
                 <button
                   onClick={logout}
                   className="flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors border border-red-100"
@@ -103,6 +110,8 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
         <div className="md:hidden bg-brand-cream border-t border-brand-pink/40 py-3 px-4 space-y-2 animate-fade-in">
           {navItems.map((item) => {
             if (item.authRequired && !isAuthenticated) return null;
+            if (item.adminOnly && !isAdmin) return null;
+            if (isAdmin && (item.id === 'home' || item.id === 'pairing')) return null;
             const Icon = item.icon;
             const isActive = currentPage === item.id;
             return (
@@ -124,9 +133,10 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
           <div className="border-t border-brand-pink/30 pt-3 mt-3">
             {isAuthenticated ? (
               <div className="space-y-3">
-                <div className="px-4 py-2 bg-brand-beige/40 rounded-xl">
+                <div className="px-4 py-2 bg-brand-beige/40 rounded-xl space-y-0.5">
                   <span className="text-sm block text-brand-chocolate-light font-medium">Logged in as:</span>
-                  <span className="text-base font-bold text-brand-chocolate">📱 {user?.mobileNumber}</span>
+                  <span className="text-base font-bold text-brand-chocolate block leading-none">📱 {user?.mobileNumber}</span>
+                  <span className="text-xs font-semibold text-brand-chocolate-light block">✉️ {user?.gmail}</span>
                 </div>
                 <button
                   onClick={() => {

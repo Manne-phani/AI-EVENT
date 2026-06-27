@@ -60,9 +60,18 @@ const initDb = async () => {
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         mobile_number TEXT UNIQUE NOT NULL,
+        gmail TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Run user schema migration in case table exists without gmail
+    try {
+      await dbRun('ALTER TABLE users ADD COLUMN gmail TEXT');
+      console.log('Database Migration: Added gmail column to users table.');
+    } catch (e) {
+      // Column already exists, safe to ignore
+    }
 
     // 2. OTPs Table
     await dbRun(`
@@ -71,9 +80,18 @@ const initDb = async () => {
         mobile_number TEXT NOT NULL,
         code TEXT NOT NULL,
         expires_at DATETIME NOT NULL,
-        used INTEGER DEFAULT 0
+        used INTEGER DEFAULT 0,
+        gmail TEXT
       )
     `);
+
+    // Run otps schema migration in case table exists without gmail
+    try {
+      await dbRun('ALTER TABLE otps ADD COLUMN gmail TEXT');
+      console.log('Database Migration: Added gmail column to otps table.');
+    } catch (e) {
+      // Column already exists, safe to ignore
+    }
 
     // 3. Generations Table
     await dbRun(`

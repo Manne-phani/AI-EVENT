@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Cookie, Phone, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Cookie, Phone, Lock, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 
 const LoginPage = ({ onLoginSuccess }) => {
   const { login, verifyOtp } = useAuth();
   const [step, setStep] = useState(1); // 1: Enter Phone, 2: Enter OTP
   const [mobileNumber, setMobileNumber] = useState('');
+  const [gmail, setGmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,16 +19,26 @@ const LoginPage = ({ onLoginSuccess }) => {
       return;
     }
     
-    // Simple verification
     if (mobileNumber.length < 8) {
       setError('Please enter a valid mobile number.');
+      return;
+    }
+
+    if (!gmail || gmail.trim() === '') {
+      setError('Please enter your Gmail address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(gmail.trim())) {
+      setError('Please enter a valid Gmail/email address.');
       return;
     }
 
     setLoading(true);
     setError(null);
     try {
-      const result = await login(mobileNumber);
+      const result = await login(mobileNumber, gmail);
       // Retrieve the generated code in dev mode to show it on screen
       if (result.debugOtp) {
         setDebugOtp(result.debugOtp);
@@ -50,8 +61,13 @@ const LoginPage = ({ onLoginSuccess }) => {
     setLoading(true);
     setError(null);
     try {
-      await verifyOtp(mobileNumber, otpCode);
-      onLoginSuccess();
+      const user = await verifyOtp(mobileNumber, otpCode);
+      const adminEmail = 'admin@gmail.com';
+      if (user && user.gmail === adminEmail) {
+        onLoginSuccess('admin');
+      } else {
+        onLoginSuccess('pairing');
+      }
     } catch (err) {
       setError(err.message || 'Incorrect verification code. Try "1234".');
     } finally {
@@ -79,6 +95,24 @@ const LoginPage = ({ onLoginSuccess }) => {
 
         {step === 1 ? (
           <form onSubmit={handleSendOtp} className="space-y-6">
+            {/* Gmail Input */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold uppercase tracking-wider text-brand-chocolate-light block">
+                Enter Gmail Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-brand-chocolate-light/40" />
+                <input
+                  type="email"
+                  value={gmail}
+                  onChange={(e) => setGmail(e.target.value)}
+                  placeholder="e.g. name@gmail.com"
+                  className="w-full bg-brand-cream border border-brand-pink/50 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-brand-rose focus:ring-1 focus:ring-brand-rose transition-colors placeholder:text-brand-chocolate-light/30"
+                />
+              </div>
+            </div>
+
+            {/* Mobile Input */}
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-brand-chocolate-light block">
                 Enter Mobile Number

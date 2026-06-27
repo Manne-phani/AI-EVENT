@@ -16,9 +16,9 @@ const HomePage = ({ setCurrentPage }) => {
 
   // Mock Premium Visual assets/metadata
   const featuredCakes = [
-    { name: 'Chocolate Truffle Raspberry', desc: 'Layers of rich Belgian chocolate ganache, infused with fresh raspberry compote.', price: '$45+', rating: 5, tag: 'Best Seller', image: '/images/chocolate_cake.png' },
-    { name: 'Red Velvet Rose Gold', desc: 'Moist red velvet crumb topped with luxurious cream cheese frosting and edible rose gold leaf.', price: '$52+', rating: 5, tag: 'Signature', image: '/images/red_velvet.png' },
-    { name: 'Salted Caramel Butterscotch', desc: 'Sweet butterscotch sponge covered in house-made salted caramel drip and honeycomb crunch.', price: '$48+', rating: 4.9, tag: 'Trending', image: '/images/butterscotch.png' }
+    { name: 'Chocolate Truffle Raspberry', desc: 'Layers of rich Belgian chocolate ganache, infused with fresh raspberry compote.', price: '₹149+', rating: 5, tag: 'Best Seller', image: '/images/chocolate_cake.png' },
+    { name: 'Red Velvet Rose Gold', desc: 'Moist red velvet crumb topped with luxurious cream cheese frosting and edible rose gold leaf.', price: '₹179+', rating: 5, tag: 'Signature', image: '/images/red_velvet.png' },
+    { name: 'Salted Caramel Butterscotch', desc: 'Sweet butterscotch sponge covered in house-made salted caramel drip and honeycomb crunch.', price: '₹159+', rating: 4.9, tag: 'Trending', image: '/images/butterscotch.png' }
   ];
 
   const pairingExamples = [

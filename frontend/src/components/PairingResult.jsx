@@ -32,17 +32,17 @@ const PairingResult = ({ result, inputs, onRegenerate, onBack }) => {
   // Unit prices in INR (Indian Rupees) - Low Cost Bakery Standards
   const getUnitPrice = (name) => {
     const n = name.toLowerCase();
-    if (n.includes('champagne') || n.includes('wine') || n.includes('martini')) return 180; // Non-alcoholic sparkling/mocktail equivalents
-    if (n.includes('punch') || n.includes('lemonade')) return 60;
-    if (n.includes('milkshake') || n.includes('lassi')) return 80;
-    if (n.includes('tea') || n.includes('water') || n.includes('cider') || n.includes('coffee') || n.includes('chai')) return 30;
-    if (n.includes('macaron')) return 50;
-    if (n.includes('eclair') || n.includes('croissant') || n.includes('danish') || n.includes('scone') || n.includes('bun') || n.includes('turnover') || n.includes('donut')) return 60;
-    if (n.includes('mousse') || n.includes('brûlée') || n.includes('panna cotta') || n.includes('pie') || n.includes('cheesecake') || n.includes('fudge') || n.includes('pop') || n.includes('cupcake') || n.includes('cake')) return 60;
-    if (n.includes('charcuterie') || n.includes('board') || n.includes('platter')) return 450;
-    if (n.includes('flatbread') || n.includes('quiche') || n.includes('canapé') || n.includes('slider') || n.includes('samosa')) return 65;
-    if (n.includes('pretzel') || n.includes('almond') || n.includes('cashew') || n.includes('skewer') || n.includes('popcorn')) return 50;
-    return 50;
+    if (n.includes('champagne') || n.includes('wine') || n.includes('martini')) return 80; // Non-alcoholic sparkling/mocktail equivalents
+    if (n.includes('punch') || n.includes('lemonade')) return 30;
+    if (n.includes('milkshake') || n.includes('lassi')) return 40;
+    if (n.includes('tea') || n.includes('water') || n.includes('cider') || n.includes('coffee') || n.includes('chai')) return 15;
+    if (n.includes('macaron')) return 20;
+    if (n.includes('eclair') || n.includes('croissant') || n.includes('danish') || n.includes('scone') || n.includes('bun') || n.includes('turnover') || n.includes('donut')) return 25;
+    if (n.includes('mousse') || n.includes('brûlée') || n.includes('panna cotta') || n.includes('pie') || n.includes('cheesecake') || n.includes('fudge') || n.includes('pop') || n.includes('cupcake') || n.includes('cake')) return 30;
+    if (n.includes('charcuterie') || n.includes('board') || n.includes('platter')) return 150;
+    if (n.includes('flatbread') || n.includes('quiche') || n.includes('canapé') || n.includes('slider') || n.includes('samosa')) return 25;
+    if (n.includes('pretzel') || n.includes('almond') || n.includes('cashew') || n.includes('skewer') || n.includes('popcorn')) return 20;
+    return 20;
   };
 
   const parseQty = (qtyStr) => {
@@ -53,7 +53,7 @@ const PairingResult = ({ result, inputs, onRegenerate, onBack }) => {
 
   // Main cake centerpiece calculations in INR - Low Cost
   const guestCountNum = parseInt(inputs.guestCount, 10) || 50;
-  const cakeRate = estimatedCostCategory === 'Luxury' ? 180 : estimatedCostCategory === 'Premium' ? 100 : 60;
+  const cakeRate = estimatedCostCategory === 'Luxury' ? 80 : estimatedCostCategory === 'Premium' ? 50 : 30;
   const cakeCost = guestCountNum * cakeRate;
 
   // Category totals
@@ -67,13 +67,13 @@ const PairingResult = ({ result, inputs, onRegenerate, onBack }) => {
   // Upsell calculations in INR - Low Cost
   const getUpsellPrice = (rec) => {
     const r = rec.toLowerCase();
-    if (r.includes('macaron tower') || r.includes('centerpiece')) return 2200;
-    if (r.includes('cookie pack') || r.includes('sugar cookie')) return 350;
-    if (r.includes('corporate box') || r.includes('corporate pastry')) return 950;
-    if (r.includes('gift box') || r.includes('hamper')) return 750;
-    if (r.includes('fondue') || r.includes('chocolate fountain')) return 1500;
-    if (r.includes('welcome pack') || r.includes('sourdough')) return 500;
-    return 500;
+    if (r.includes('macaron tower') || r.includes('centerpiece')) return 600;
+    if (r.includes('cookie pack') || r.includes('sugar cookie')) return 100;
+    if (r.includes('corporate box') || r.includes('corporate pastry')) return 250;
+    if (r.includes('gift box') || r.includes('hamper')) return 200;
+    if (r.includes('fondue') || r.includes('chocolate fountain')) return 400;
+    if (r.includes('welcome pack') || r.includes('sourdough')) return 120;
+    return 120;
   };
   const upsellCost = addUpsell ? getUpsellPrice(extraRecommendation) : 0;
 
